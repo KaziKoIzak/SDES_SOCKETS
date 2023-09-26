@@ -389,44 +389,18 @@ void Decrypt()
     copyArray(combinedArray, plaintext, 8);
 }
 
-void encryptPixels(unsigned char *pixels, int size)
+char encryptPixels(char character)
 {
-    for (int i = 0; i < size; i++)
-    {
-        charToBinary(pixels[i], plaintext);
-        xorArrays(plaintext, IV, 8, plaintext);
-        Encrypt();
-        copyArray(ciphertext, IV, 8);
-        pixels[i] = binaryArrayToChar(ciphertext);
-    }
+    charToBinary(character, plaintext);
+    Encrypt();
+    return character = binaryArrayToChar(ciphertext);
 }
 
-void decryptPixels(unsigned char *pixels, int size)
+char decryptPixels(char character)
 {
-    for (int i = 0; i < size; i++)
-    {
-        charToBinary(pixels[i], ciphertext);
-        if(i % 2 == 0)
-        {
-            copyArray(ciphertext, IV3, 8);
-        }
-        else{
-            copyArray(ciphertext, IV4, 8);
-        }
-        Decrypt();
-        if(i == 0)
-        {
-            xorArrays(plaintext, IV2, 8, plaintext);
-        }
-        else if(i % 2 == 1)
-        {
-            xorArrays(plaintext, IV3, 8, plaintext);
-        }
-        else{
-            xorArrays(plaintext, IV4, 8, plaintext);
-        }
-        pixels[i] = binaryArrayToChar(plaintext);
-    }
+    charToBinary(character, ciphertext);
+    Decrypt();
+    return character = binaryArrayToChar(plaintext);   
 }
 
 void keys(long long something){

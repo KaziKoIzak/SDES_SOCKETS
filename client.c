@@ -52,12 +52,25 @@ int main(int argc , char *argv[])
 
     long long sharedKey = FME(new_value, 107, 257);
 
+	keys(sharedKey);
+
+
+
 	//Get data from keyboard and send  to server
 	printf("What do you want to send to the server. (b for bye)\n");
 	while(strncmp(client_message,"b",1))      // quit on "b" for "bye"
 	{
 		memset(client_message,'\0',100);
-		scanf("%s",client_message);
+
+		fgets(client_message, sizeof(client_message), stdin);
+		
+		// Remove the newline character at the end (if present)
+		client_message[strcspn(client_message, "\n")] = '\0';
+		
+		// Iterate through each character and convert to uppercase
+		for(int i = 0; i < strlen(client_message); i++) {
+			client_message[i] = encryptPixels(client_message[i]);
+		}
 
 		if( send(socket_desc , &client_message, strlen(client_message) , 0) < 0)
 		{

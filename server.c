@@ -75,7 +75,7 @@ int main(int argc , char *argv[])
     send(socket_desc, (char *)&publicKey, sizeof(long long), 0);
 
     long long sharedKey = FME(new_value, 93, 257);
-	
+
 	//Receive a message from client
 	while( (read_size = recv(new_socket , client_message , 100 , 0)) > 0 )
 	{
@@ -88,6 +88,9 @@ int main(int argc , char *argv[])
 			system(list);
 			printf("\n\n");
 		}
+
+		
+
 		//Send the message back to client
 		for(i=0;i< read_size;i++)
 		{
@@ -95,7 +98,7 @@ int main(int argc , char *argv[])
 				client_message[i] = 'z';
 		}
 
-        printf(" Sending back Z'd up message:  %.*s \n", read_size ,client_message);
+        printf(" Sending back decrypted message:  %.*s \n", read_size ,client_message);
 
 		//write(new_socket, client_message , strlen(client_message));
 		write(new_socket, client_message , read_size);
