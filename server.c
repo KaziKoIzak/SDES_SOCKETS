@@ -7,13 +7,14 @@
 *                                  RSF    11/14/20
 *
 ****************************************************/
-#include<stdio.h>
-#include<string.h>	//strlen
-#include<sys/socket.h>
-#include<arpa/inet.h>	//inet_addr
-#include<unistd.h>	//write
-#include<stdlib.h>	// for system & others
-
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <unistd.h>
+#include"FME.h"
+#include "SDES.h"
 
 int main(int argc , char *argv[])
 {

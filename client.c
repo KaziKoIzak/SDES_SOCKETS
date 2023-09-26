@@ -11,6 +11,8 @@
 #include<string.h>	
 #include<sys/socket.h>
 #include<arpa/inet.h>  // for inet_addr and sockaddr_in structs
+#include "FME.h"
+#include "SDES.h"
 
 int main(int argc , char *argv[])
 {
@@ -39,7 +41,13 @@ int main(int argc , char *argv[])
 		printf(" connect error");
 		return 1;
 	}
+
+    long long key = FME(3, 107, 257);
 	
+    if (send(socket_desc, (char *)&key, sizeof(long long), 0) == -1) {
+        perror("send");
+    close(socket_desc);
+    }
 
 	//Get data from keyboard and send  to server
 	printf("What do you want to send to the server. (b for bye)\n");
