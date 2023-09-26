@@ -1,61 +1,107 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <unistd.h>
+/****************************************************
+*
+*    Basic minimal socket server program for use
+*    in CSc 487 final projects.  You will have to
+*    enhance this for your projects!!
+*
+*                                  RSF    11/14/20
+*
+****************************************************/
+#include<stdio.h>
+#include<string.h>	//strlen
+#include<sys/socket.h>
+#include<arpa/inet.h>	//inet_addr
+#include<unistd.h>	//write
+#include<stdlib.h>	// for system & others
 
-int main() {
-    // Create a socket
-    int server_socket = socket(AF_INET, SOCK_STREAM, 0);
-    if (server_socket == -1) {
-        perror("Error creating socket");
-        exit(EXIT_FAILURE);
-    }
 
-    // Define server address
-    struct sockaddr_in server_addr;
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(8080);  // Port number
-    server_addr.sin_addr.s_addr = INADDR_ANY;
+int main(int argc , char *argv[])
+{
+	int socket_desc , new_socket , c, read_size, i;
+	struct sockaddr_in server , client;
+	char *message, client_message[100];
 
-    // Bind the socket to the specified address and port
-    if (bind(server_socket, (struct sockaddr *)&server_addr, sizeof(server_addr)) == -1) {
-        perror("Error binding");
-        close(server_socket);
-        exit(EXIT_FAILURE);
-    }
+	char *list;	
+	list = "ls -l\n";
 
-    // Listen for incoming connections
-    if (listen(server_socket, 10) == -1) {
-        perror("Error listening");
-        close(server_socket);
-        exit(EXIT_FAILURE);
-    }
+	//Create socket
+	socket_desc = socket(AF_INET , SOCK_STREAM , 0);
+	if (socket_desc == -1)
+	{
+		printf("Could not create socket");
+	}
+	
+	//Prepare the sockaddr_in structure
+	server.sin_family = AF_INET;
+	server.sin_addr.s_addr = INADDR_ANY;
+	server.sin_port = htons( 8421 );                 // Random high (assumed unused) port
+	
+	//Bind
+	if( bind(socket_desc,(struct sockaddr *)&server , sizeof(server)) < 0)
+	{
+		printf(" unable to bind\n");
+		return 1;
+	}
+	printf(" socket bound, ready for and waiting on a client\n");
+	
+	//Listen
+	listen(socket_desc , 3);
+	
+	//Accept incoming connection
+	printf(" Waiting for incoming connections... \n");
+	
+	
+	c = sizeof(struct sockaddr_in);
+	new_socket = accept(socket_desc, (struct sockaddr *)&client, (socklen_t*)&c);
+	if (new_socket<0)
+	{
+		perror("accept failed");
+		return 1;
+	}
+	
+	printf("Connection accepted\n");
 
-    printf("Server is listening...\n");
+	
+	//Reply to the client
+	message = "You have located Server X at our undisclosed location.  What would you like to say?\n";
+	//write(new_socket , message , strlen(message));
+	
+	//Receive a message from client
+	while( (read_size = recv(new_socket , client_message , 100 , 0)) > 0 )
+	{
 
-    // Accept connections
-    struct sockaddr_in client_addr;
-    socklen_t client_len = sizeof(client_addr);
-    int client_socket = accept(server_socket, (struct sockaddr *)&client_addr, &client_len);
-    if (client_socket == -1) {
-        perror("Error accepting connection");
-        close(server_socket);
-        exit(EXIT_FAILURE);
-    }
+		printf("\n Client sent %2i byte message:  %.*s\n",read_size, read_size ,client_message);
 
-    // Communication
-    char buffer[1024];
-    recv(client_socket, buffer, sizeof(buffer), 0);
-    printf("Received: %s\n", buffer);
+		if(!strncmp(client_message,"showMe",6)) 
+		{
+			printf("\nFiles in this directory: \n");
+			system(list);
+			printf("\n\n");
+		}
+		//Send the message back to client
+		for(i=0;i< read_size;i++)
+		{
+			if ( i%2)
+				client_message[i] = 'z';
+		}
 
-    const char *response = "Hello, client!";
-    send(client_socket, response, strlen(response), 0);
+               	printf(" Sending back Z'd up message:  %.*s \n", read_size ,client_message);
 
-    // Clean up
-    close(client_socket);
-    close(server_socket);
-
-    return 0;
+		//write(new_socket, client_message , strlen(client_message));
+		write(new_socket, client_message , read_size);
+	}
+	
+	if(read_size == 0)
+	{
+		printf("client disconnected\n");
+		fflush(stdout);
+	}
+	else if(read_size == -1)
+	{
+		perror("receive failed");
+	}
+		
+	//Free the socket pointer
+	close(socket_desc);
+	return 0;
 }
