@@ -1,4 +1,6 @@
+#include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 // Initial permutation table
 int IP[] = {2, 6, 3, 1, 4, 8, 5, 7};
@@ -18,6 +20,11 @@ int plaintext[] = {0, 0, 0, 0, 0, 0, 0, 0};
 
 int ciphertext[] = {0, 0, 0, 0, 0, 0, 0, 0};
 
+int IV[] = {1, 0, 1, 1, 1, 0, 1, 1};
+int IV2[] = {1, 0, 1, 1, 1, 0, 1, 1};
+int IV3[] = {1, 0, 1, 1, 1, 0, 1, 1};
+int IV4[] = {1, 0, 1, 1, 1, 0, 1, 1};
+
 // Expansion permutation table
 int EP[] = {4, 1, 2, 3, 2, 3, 4, 1};
 
@@ -31,6 +38,13 @@ int S1[4][4] = {{0, 1, 2, 3}, {2, 0, 1, 3}, {3, 0, 1, 0}, {2, 1, 0, 3}};
 int P8[] = {6, 3, 7, 4, 8, 5, 10, 9};
 
 int P10[] = {3, 5, 2, 7, 4, 10, 1, 9, 8, 6};
+
+void convertToBinaryArray(long long num, int binaryArray[], int size) {
+    for (int i = size - 1; i >= 0; i--) {
+        binaryArray[i] = num % 2;
+        num /= 2;
+    }
+}
 
 char binaryArrayToChar(int *binaryArray)
 {
@@ -57,22 +71,6 @@ void combine2BitArrays(int *array1, int *array2, int *result)
         result[i] = array1[i];
         result[i + 2] = array2[i];
     }
-}
-
-void hexToBinary(char hex, int *binaryArray)
-{
-    int decimal;
-    sscanf(&hex, "%x", &decimal);
-    for (int i = 3; i >= 0; i--)
-    {
-        binaryArray[i] = decimal % 2;
-        decimal /= 2;
-    }
-}
-
-void binaryToHex(int *binaryArray, char *hexValue)
-{
-    sprintf(hexValue, "%02X", (binaryArray[0] << 7) | (binaryArray[1] << 6) | (binaryArray[2] << 5) | (binaryArray[3] << 4) | (binaryArray[4] << 3) | (binaryArray[5] << 2) | (binaryArray[6] << 1) | binaryArray[7]);
 }
 
 void finalPermutation(int *plaintext)
@@ -391,14 +389,52 @@ void Decrypt()
     copyArray(combinedArray, plaintext, 8);
 }
 
-void CSDES()
+void encryptPixels(unsigned char *pixels, int size)
 {
-    FILE *inputFile = fopen("plaintext.txt", "r");
-    FILE *outputFile = fopen("ciphertext.txt", "w");
+    for (int i = 0; i < size; i++)
+    {
+        charToBinary(pixels[i], plaintext);
+        xorArrays(plaintext, IV, 8, plaintext);
+        Encrypt();
+        copyArray(ciphertext, IV, 8);
+        pixels[i] = binaryArrayToChar(ciphertext);
+    }
+}
+
+void decryptPixels(unsigned char *pixels, int size)
+{
+    for (int i = 0; i < size; i++)
+    {
+        charToBinary(pixels[i], ciphertext);
+        if(i % 2 == 0)
+        {
+            copyArray(ciphertext, IV3, 8);
+        }
+        else{
+            copyArray(ciphertext, IV4, 8);
+        }
+        Decrypt();
+        if(i == 0)
+        {
+            xorArrays(plaintext, IV2, 8, plaintext);
+        }
+        else if(i % 2 == 1)
+        {
+            xorArrays(plaintext, IV3, 8, plaintext);
+        }
+        else{
+            xorArrays(plaintext, IV4, 8, plaintext);
+        }
+        pixels[i] = binaryArrayToChar(plaintext);
+    }
+}
+
+void keys(long long something){
     char character;
     int output[10];
     int count = 0;
     int i = 0;
+    convertToBinaryArray(something, key, 10);
 
     for (int i = 0; i < 10; i++)
     {
@@ -416,59 +452,4 @@ void CSDES()
     subKey(keySaver, key, 2);
     copyArray(keySaver, key, 8);
     copyArray(key, subKey2, 8);
-
-    if (inputFile == NULL || outputFile == NULL)
-    {
-        perror("Error opening files");
-        return;
-    }
-
-    while ((character = fgetc(inputFile)) != EOF)
-    {
-        charToBinary(character, plaintext);
-
-        Encrypt();
-
-        character = binaryArrayToChar(ciphertext);
-
-        fputc(character, outputFile);
-        count++;
-    }
-
-    fclose(inputFile);
-    fclose(outputFile);
-
-    inputFile = fopen("ciphertext.txt", "r");
-    outputFile = fopen("plaintext.txt", "w");
-
-    if (inputFile == NULL || outputFile == NULL)
-    {
-        perror("Error opening files");
-        return;
-    }
-
-    while (i < count)
-    {
-        character = fgetc(inputFile);
-        charToBinary(character, ciphertext);
-
-        Decrypt();
-
-        character = binaryArrayToChar(plaintext);
-
-        fputc(character, outputFile);
-        i++;
-    }
-
-    fclose(inputFile);
-    fclose(outputFile);
-
-    return;
-}
-
-int main()
-{
-    CSDES();
-
-    return 0;
 }

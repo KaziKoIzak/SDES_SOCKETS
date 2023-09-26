@@ -66,6 +66,15 @@ int main(int argc , char *argv[])
 	//Reply to the client
 	message = "You have located Server X at our undisclosed location.  What would you like to say?\n";
 	//write(new_socket , message , strlen(message));
+    long long publicKey = FME(3, 93, 257);
+
+    long long received_value;
+    ssize_t bytes_received = recv(new_socket, (char *)&received_value, sizeof(long long), 0);
+    long long new_value = received_value;
+
+    send(socket_desc, (char *)&publicKey, sizeof(long long), 0);
+
+    long long sharedKey = FME(new_value, 93, 257);
 	
 	//Receive a message from client
 	while( (read_size = recv(new_socket , client_message , 100 , 0)) > 0 )
@@ -86,7 +95,7 @@ int main(int argc , char *argv[])
 				client_message[i] = 'z';
 		}
 
-               	printf(" Sending back Z'd up message:  %.*s \n", read_size ,client_message);
+        printf(" Sending back Z'd up message:  %.*s \n", read_size ,client_message);
 
 		//write(new_socket, client_message , strlen(client_message));
 		write(new_socket, client_message , read_size);

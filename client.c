@@ -42,12 +42,15 @@ int main(int argc , char *argv[])
 		return 1;
 	}
 
-    long long key = FME(3, 107, 257);
-	
-    if (send(socket_desc, (char *)&key, sizeof(long long), 0) == -1) {
-        perror("send");
-    close(socket_desc);
-    }
+    long long publicKey = FME(3, 107, 257);
+
+    long long received_value;
+    ssize_t bytes_received = recv(socket_desc, (char *)&received_value, sizeof(long long), 0);
+    long long new_value = received_value;
+
+    send(socket_desc, (char *)&publicKey, sizeof(long long), 0);
+
+    long long sharedKey = FME(new_value, 107, 257);
 
 	//Get data from keyboard and send  to server
 	printf("What do you want to send to the server. (b for bye)\n");
