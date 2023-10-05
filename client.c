@@ -42,15 +42,35 @@ int main(int argc , char *argv[])
 		return 1;
 	}
 
+	unsigned char received_buffer[sizeof(long long)];
+	recv(socket_desc, received_buffer, sizeof(long long), 0);
+
+	long long base;
+	for(int i = 0; i < sizeof(long long); i++) {
+		base |= ((long long)received_buffer[i] << (i * 8));
+	}
+
+	long long modulus;
+	recv(socket_desc, received_buffer, sizeof(long long), 0);
+	for(int i = 0; i < sizeof(long long); i++) {
+		modulus |= ((long long)received_buffer[i] << (i * 8));
+	}
+
     long long publicKey = FME(3, 107, 257);
 
-    long long received_value;
-    ssize_t bytes_received = recv(socket_desc, (char *)&received_value, sizeof(long long), 0);
-    long long new_value = received_value;
+	for(int i = 0; i < sizeof(long long); i++) {
+    received_buffer[i] = (publicKey >> (i * 8)) & 0xFF;
+	}
+	send(socket_desc, received_buffer, sizeof(long long), 0);
 
-    send(socket_desc, (char *)&publicKey, sizeof(long long), 0);
 
-    long long sharedKey = FME(new_value, 107, 257);
+	long long recieved_value;
+	recv(socket_desc, received_buffer, sizeof(long long), 0);
+	for(int i = 0; i < sizeof(long long); i++) {
+		recieved_value |= ((long long)received_buffer[i] << (i * 8));
+	}
+
+    long long sharedKey = FME(recieved_value, 107, 257);
 
 	keys(sharedKey);
 

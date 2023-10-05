@@ -66,15 +66,35 @@ int main(int argc , char *argv[])
 	//Reply to the client
 	message = "You have located Server X at our undisclosed location.  What would you like to say?\n";
 	//write(new_socket , message , strlen(message));
+	long long base = 7;
+	long long modulus = 257;
     long long publicKey = FME(3, 93, 257);
+
+	unsigned char buffer[sizeof(long long)];
+	for(int i = 0; i < sizeof(long long); i++) {
+    buffer[i] = (base >> (i * 8)) & 0xFF;
+	}
+
+	send(socket_desc, buffer, sizeof(long long), 0);
+	
+	for(int i = 0; i < sizeof(long long); i++) {
+    buffer[i] = (modulus >> (i * 8)) & 0xFF;
+	}
+
+	send(socket_desc, buffer, sizeof(long long), 0);
+
+	for(int i = 0; i < sizeof(long long); i++) {
+    buffer[i] = (publicKey >> (i * 8)) & 0xFF;
+	}
+	send(socket_desc, buffer, sizeof(long long), 0);
 
     long long received_value;
     ssize_t bytes_received = recv(new_socket, (char *)&received_value, sizeof(long long), 0);
     long long new_value = received_value;
 
-    send(socket_desc, (char *)&publicKey, sizeof(long long), 0);
-
     long long sharedKey = FME(new_value, 93, 257);
+
+	keys(sharedKey);
 
 	//Receive a message from client
 	while( (read_size = recv(new_socket , client_message , 100 , 0)) > 0 )
