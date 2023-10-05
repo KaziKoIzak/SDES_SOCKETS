@@ -59,6 +59,12 @@ int main(int argc , char *argv[])
 		modulus |= ((long long)received_buffer[i] << (i * 8));
 	}
 
+	long long recieved_value;
+	recv(socket_desc, received_buffer, sizeof(long long), 0);
+	for(int i = 0; i < sizeof(long long); i++) {
+		recieved_value |= ((long long)received_buffer[i] << (i * 8));
+	}
+
     long long publicKey = FME(base, exponentPrivate, modulus);
 
 	for(int i = 0; i < sizeof(long long); i++) {
@@ -66,12 +72,6 @@ int main(int argc , char *argv[])
 	}
 	send(socket_desc, &received_buffer, sizeof(long long), 0);
 
-
-	long long recieved_value;
-	recv(socket_desc, received_buffer, sizeof(long long), 0);
-	for(int i = 0; i < sizeof(long long); i++) {
-		recieved_value |= ((long long)received_buffer[i] << (i * 8));
-	}
 
     long long sharedKey = FME(recieved_value, exponentPrivate, modulus);
 
