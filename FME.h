@@ -20,10 +20,6 @@ long long fastModExpo(long long base, long long exponent, long long modulus)
 
 long long FME(long long base, long long exponent, long long modulus)
 {
-    base = 181;
-    exponent = 107;
-    modulus = 257;
-
     long long result = fastModExpo(base, exponent, modulus);
 
     printf("%lld^%lld mod %lld = %lld\n", base, exponent, modulus, result);

@@ -427,3 +427,19 @@ void keys(long long something){
     copyArray(keySaver, key, 8);
     copyArray(key, subKey2, 8);
 }
+
+char keysEncrypt(char character, long long something)
+{
+    keys(something);
+    encryptPixels(character);
+
+    return character;
+}
+
+char keysDecrypt(char character, long long something)
+{
+    keys(something);
+    decryptPixels(character);
+
+    return character;
+}

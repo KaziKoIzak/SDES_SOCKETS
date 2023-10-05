@@ -75,7 +75,6 @@ int main(int argc , char *argv[])
 	keys(sharedKey);
 
 
-
 	//Get data from keyboard and send  to server
 	printf("What do you want to send to the server. (b for bye)\n");
 	while(strncmp(client_message,"b",1))      // quit on "b" for "bye"

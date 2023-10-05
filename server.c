@@ -88,11 +88,13 @@ int main(int argc , char *argv[])
 	}
 	send(socket_desc, buffer, sizeof(long long), 0);
 
-    long long received_value;
-    ssize_t bytes_received = recv(new_socket, (char *)&received_value, sizeof(long long), 0);
-    long long new_value = received_value;
+	long long recieved_value;
+	recv(socket_desc, buffer, sizeof(long long), 0);
+	for(int i = 0; i < sizeof(long long); i++) {
+		recieved_value |= ((long long)buffer[i] << (i * 8));
+	}
 
-    long long sharedKey = FME(new_value, 93, 257);
+    long long sharedKey = FME(recieved_value, 93, 257);
 
 	keys(sharedKey);
 
