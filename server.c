@@ -77,18 +77,18 @@ int main(int argc , char *argv[])
     buffer[i] = (base >> (i * 8)) & 0xFF;
 	}
 
-	send(new_socket, buffer, sizeof(long long), 0);
+	send(new_socket, &buffer, sizeof(long long), 0);
 	
 	for(int i = 0; i < sizeof(long long); i++) {
     buffer[i] = (modulus >> (i * 8)) & 0xFF;
 	}
 
-	send(new_socket, buffer, sizeof(long long), 0);
+	send(new_socket, &buffer, sizeof(long long), 0);
 
 	for(int i = 0; i < sizeof(long long); i++) {
     buffer[i] = (publicKey >> (i * 8)) & 0xFF;
 	}
-	send(new_socket, buffer, sizeof(long long), 0);
+	send(new_socket, &buffer, sizeof(long long), 0);
 
 	long long recieved_value;
 	recv(new_socket, buffer, sizeof(long long), 0);

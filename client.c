@@ -64,7 +64,7 @@ int main(int argc , char *argv[])
 	for(int i = 0; i < sizeof(long long); i++) {
     received_buffer[i] = (publicKey >> (i * 8)) & 0xFF;
 	}
-	send(socket_desc, received_buffer, sizeof(long long), 0);
+	send(socket_desc, &received_buffer, sizeof(long long), 0);
 
 
 	long long recieved_value;
