@@ -13,6 +13,7 @@
 #include<arpa/inet.h>  // for inet_addr and sockaddr_in structs
 #include "FME.h"
 #include "SDES.h"
+#include<stdlib.h>
 
 int main(int argc , char *argv[])
 {
@@ -42,6 +43,8 @@ int main(int argc , char *argv[])
 		return 1;
 	}
 
+	long long exponentPrivate = 1012437;
+
 	unsigned char received_buffer[sizeof(long long)];
 	recv(socket_desc, received_buffer, sizeof(long long), 0);
 
@@ -56,7 +59,7 @@ int main(int argc , char *argv[])
 		modulus |= ((long long)received_buffer[i] << (i * 8));
 	}
 
-    long long publicKey = FME(3, 107, 257);
+    long long publicKey = FME(base, exponentPrivate, modulus);
 
 	for(int i = 0; i < sizeof(long long); i++) {
     received_buffer[i] = (publicKey >> (i * 8)) & 0xFF;
@@ -70,9 +73,7 @@ int main(int argc , char *argv[])
 		recieved_value |= ((long long)received_buffer[i] << (i * 8));
 	}
 
-    long long sharedKey = FME(recieved_value, 107, 257);
-
-	keys(sharedKey);
+    long long sharedKey = FME(recieved_value, exponentPrivate, modulus);
 
 
 	//Get data from keyboard and send  to server
@@ -88,7 +89,7 @@ int main(int argc , char *argv[])
 		
 		// Iterate through each character and convert to uppercase
 		for(int i = 0; i < strlen(client_message); i++) {
-			client_message[i] = encryptPixels(client_message[i]);
+			client_message[i] = keysDecrypt(client_message[i], sharedKey);
 		}
 
 		if( send(socket_desc , &client_message, strlen(client_message) , 0) < 0)

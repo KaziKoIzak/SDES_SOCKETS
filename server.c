@@ -15,6 +15,7 @@
 #include <unistd.h>
 #include"FME.h"
 #include "SDES.h"
+#include<stdlib.h>
 
 int main(int argc , char *argv[])
 {
@@ -62,41 +63,40 @@ int main(int argc , char *argv[])
 	
 	printf("Connection accepted\n");
 
-	
 	//Reply to the client
 	message = "You have located Server X at our undisclosed location.  What would you like to say?\n";
 	//write(new_socket , message , strlen(message));
 	long long base = 7;
 	long long modulus = 257;
-    long long publicKey = FME(3, 93, 257);
+	long long exponent = 127883921;
+
+    long long publicKey = FME(base, exponent, modulus);
 
 	unsigned char buffer[sizeof(long long)];
 	for(int i = 0; i < sizeof(long long); i++) {
     buffer[i] = (base >> (i * 8)) & 0xFF;
 	}
 
-	send(socket_desc, buffer, sizeof(long long), 0);
+	send(new_socket, buffer, sizeof(long long), 0);
 	
 	for(int i = 0; i < sizeof(long long); i++) {
     buffer[i] = (modulus >> (i * 8)) & 0xFF;
 	}
 
-	send(socket_desc, buffer, sizeof(long long), 0);
+	send(new_socket, buffer, sizeof(long long), 0);
 
 	for(int i = 0; i < sizeof(long long); i++) {
     buffer[i] = (publicKey >> (i * 8)) & 0xFF;
 	}
-	send(socket_desc, buffer, sizeof(long long), 0);
+	send(new_socket, buffer, sizeof(long long), 0);
 
 	long long recieved_value;
-	recv(socket_desc, buffer, sizeof(long long), 0);
+	recv(new_socket, buffer, sizeof(long long), 0);
 	for(int i = 0; i < sizeof(long long); i++) {
 		recieved_value |= ((long long)buffer[i] << (i * 8));
 	}
 
-    long long sharedKey = FME(recieved_value, 93, 257);
-
-	keys(sharedKey);
+    long long sharedKey = FME(recieved_value, exponent, modulus);
 
 	//Receive a message from client
 	while( (read_size = recv(new_socket , client_message , 100 , 0)) > 0 )
@@ -116,8 +116,7 @@ int main(int argc , char *argv[])
 		//Send the message back to client
 		for(i=0;i< read_size;i++)
 		{
-			if ( i%2)
-				client_message[i] = 'z';
+			client_message[i] = keysDecrypt(client_message[i], sharedKey);
 		}
 
         printf(" Sending back decrypted message:  %.*s \n", read_size ,client_message);
