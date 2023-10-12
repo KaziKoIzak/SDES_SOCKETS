@@ -43,37 +43,37 @@ int main(int argc , char *argv[])
 		return 1;
 	}
 
-	long long exponentPrivate = 1012437;
+	unsigned int exponentPrivate = 1012437;
 
-	unsigned char received_buffer[sizeof(long long)];
-	recv(socket_desc, received_buffer, sizeof(long long), 0);
+	unsigned char received_buffer[sizeof(unsigned int)];
+	recv(socket_desc, received_buffer, sizeof(unsigned int), 0);
 
-	long long base;
-	for(int i = 0; i < sizeof(long long); i++) {
-		base |= ((long long)received_buffer[i] << (i * 8));
+	unsigned int base;
+	for(int i = 0; i < sizeof(unsigned int); i++) {
+		base |= ((unsigned int)received_buffer[i] << (i * 8));
 	}
 
-	long long modulus;
-	recv(socket_desc, received_buffer, sizeof(long long), 0);
-	for(int i = 0; i < sizeof(long long); i++) {
-		modulus |= ((long long)received_buffer[i] << (i * 8));
+	unsigned int modulus;
+	recv(socket_desc, received_buffer, sizeof(unsigned int), 0);
+	for(int i = 0; i < sizeof(unsigned int); i++) {
+		modulus |= ((unsigned int)received_buffer[i] << (i * 8));
 	}
 
-	long long recieved_value;
-	recv(socket_desc, received_buffer, sizeof(long long), 0);
-	for(int i = 0; i < sizeof(long long); i++) {
-		recieved_value |= ((long long)received_buffer[i] << (i * 8));
+	unsigned int recieved_value;
+	recv(socket_desc, received_buffer, sizeof(unsigned int), 0);
+	for(int i = 0; i < sizeof(unsigned int); i++) {
+		recieved_value |= ((unsigned int)received_buffer[i] << (i * 8));
 	}
 
-    long long publicKey = FME(base, exponentPrivate, modulus);
+    unsigned int publicKey = FME(base, exponentPrivate, modulus);
 
-	for(int i = 0; i < sizeof(long long); i++) {
+	for(int i = 0; i < sizeof(unsigned int); i++) {
     received_buffer[i] = (publicKey >> (i * 8)) & 0xFF;
 	}
-	send(socket_desc, &received_buffer, sizeof(long long), 0);
+	send(socket_desc, received_buffer, sizeof(unsigned int), 0);
 
 
-    long long sharedKey = FME(recieved_value, exponentPrivate, modulus);
+    unsigned int sharedKey = FME(recieved_value, exponentPrivate, modulus);
 
 
 	//Get data from keyboard and send  to server

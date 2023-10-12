@@ -443,3 +443,18 @@ char keysDecrypt(char character, long long something)
 
     return character;
 }
+
+char Hash(unsigned char *pixels, int size, long long something)
+{
+    keys(something);
+    for (int i = 0; i < size; i++)
+    {
+        charToBinary(pixels[i], plaintext);
+        xorArrays(plaintext, IV, 8, plaintext);
+        Encrypt();
+        copyArray(ciphertext, IV, 8);
+        pixels[i] = binaryArrayToChar(ciphertext);
+    }
+
+    return pixels[size-1];
+}

@@ -1,8 +1,8 @@
 #include <stdio.h>
 
-long long fastModExpo(long long base, long long exponent, long long modulus)
+unsigned int fastModExpo(unsigned int base, unsigned int exponent, unsigned int modulus)
 {
-    long long result = 1;
+    unsigned int result = 1;
     base = base % modulus;
 
     while (exponent > 0)
@@ -18,11 +18,11 @@ long long fastModExpo(long long base, long long exponent, long long modulus)
     return result;
 }
 
-long long FME(long long base, long long exponent, long long modulus)
+unsigned int FME(unsigned int base, unsigned int exponent, unsigned int modulus)
 {
-    long long result = fastModExpo(base, exponent, modulus);
+    unsigned int result = fastModExpo(base, exponent, modulus);
 
-    printf("%lld^%lld mod %lld = %lld\n", base, exponent, modulus, result);
+    printf("%u^%u mod %u = %u\n", base, exponent, modulus, result);
 
     return result;
 }
