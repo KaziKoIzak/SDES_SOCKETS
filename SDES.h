@@ -1,3 +1,6 @@
+#ifndef _SDES_H
+#define _SDES_H
+
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -489,3 +492,5 @@ unsigned int basicallyRSA(unsigned int p, unsigned int q)
 
     return d;
 }
+
+#endif

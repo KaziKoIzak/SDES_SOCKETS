@@ -1,3 +1,6 @@
+#ifndef _FME_H
+#define _FME_H
+
 #include <stdio.h>
 
 unsigned int gcd(unsigned int a, unsigned int b) {
@@ -23,19 +26,19 @@ unsigned int extendedGCD(unsigned int a, unsigned int b, unsigned int *x, unsign
     }
 
     unsigned int x1, y1;
-    unsigned int gcd = extendedGCD(b % a, a, &x1, &y1);
+    unsigned int gcde = extendedGCD(b % a, a, &x1, &y1);
 
     *x = y1 - (b / a) * x1;
     *y = x1;
 
-    return gcd;
+    return gcde;
 }
 
 unsigned int modInverse(unsigned int a, unsigned int m) {
     unsigned int x, y;
-    unsigned int gcd = extendedGCD(a, m, &x, &y);
+    unsigned int gcde = extendedGCD(a, m, &x, &y);
 
-    if (gcd != 1) {
+    if (gcde != 1) {
         // Modular inverse does not exist
         return -1;
     }
@@ -70,3 +73,5 @@ unsigned int FME(unsigned int base, unsigned int exponent, unsigned int modulus)
 
     return result;
 }
+
+#endif
