@@ -26,8 +26,11 @@ int main(int argc , char *argv[])
 	scanf("%u", &q);
 
 	e = basicallyRSA(p, q);
+	printf("%u\n", e);
 	d = DRSA(p, q);
+	printf("%u\n", d);
 	n = PrimeN(p, q);
+	printf("%u\n", n);
 	
 	int socket_desc , new_socket , c, read_size, i;
 	struct sockaddr_in server , client;
@@ -80,7 +83,7 @@ int main(int argc , char *argv[])
 	unsigned int modulus = 257;
 	unsigned int exponent = 127883921;
 
-    unsigned int publicKey = FME(base, exponent, modulus);
+    unsigned int publicKey1 = FME(base, exponent, modulus);
 
 	unsigned char buffer[sizeof(unsigned int)];
 	for(int i = 0; i < sizeof(unsigned int); i++) {
@@ -95,8 +98,20 @@ int main(int argc , char *argv[])
 
 	send(new_socket, buffer, sizeof(unsigned int), 0);
 
+	unsigned int publicKey = FME(publicKey1, d, n);
+
 	for(int i = 0; i < sizeof(unsigned int); i++) {
     buffer[i] = (publicKey >> (i * 8)) & 0xFF;
+	}
+	send(new_socket, buffer, sizeof(unsigned int), 0);
+
+	for(int i = 0; i < sizeof(unsigned int); i++) {
+    buffer[i] = (e >> (i * 8)) & 0xFF;
+	}
+	send(new_socket, buffer, sizeof(unsigned int), 0);
+
+	for(int i = 0; i < sizeof(unsigned int); i++) {
+    buffer[i] = (n >> (i * 8)) & 0xFF;
 	}
 	send(new_socket, buffer, sizeof(unsigned int), 0);
 
@@ -106,7 +121,23 @@ int main(int argc , char *argv[])
 		recieved_value |= ((unsigned int)buffer[i] << (i * 8));
 	}
 
-    unsigned int sharedKey = FME(recieved_value, exponent, modulus);
+	unsigned int AliceE;
+	recv(new_socket, buffer, sizeof(unsigned int), 0);
+	for(int i = 0; i < sizeof(unsigned int); i++) {
+		recieved_value |= ((unsigned int)buffer[i] << (i * 8));
+	}
+
+	unsigned int AliceN;
+	recv(new_socket, buffer, sizeof(unsigned int), 0);
+	for(int i = 0; i < sizeof(unsigned int); i++) {
+		recieved_value |= ((unsigned int)buffer[i] << (i * 8));
+	}
+
+	unsigned int AuthenticationA = FME(recieved_value, AliceE, AliceN);
+
+	printf("%u\n", AuthenticationA);
+
+    //unsigned int sharedKey = FME(recieved_value, exponent, modulus);
 
 	//Receive a message from client
 	while( (read_size = recv(new_socket , client_message , 100 , 0)) > 0 )
@@ -126,7 +157,7 @@ int main(int argc , char *argv[])
 		//Send the message back to client
 		for(i=0;i< read_size;i++)
 		{
-			client_message[i] = keysDecrypt(client_message[i], sharedKey);
+			//client_message[i] = keysDecrypt(client_message[i], sharedKey);
 		}
 
         printf(" Sending back decrypted message:  %.*s \n", read_size ,client_message);

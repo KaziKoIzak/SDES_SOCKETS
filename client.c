@@ -24,8 +24,11 @@ int main(int argc , char *argv[])
 	scanf("%u", &q);
 
 	e = basicallyRSA(p, q);
+	printf("%u\n", e);
 	d = DRSA(p, q);
+	printf("%u\n", d);
 	n = PrimeN(p, q);
+	printf("%u\n", n);
 
 	int socket_desc;    // file descripter returned by socket command
 	int read_size;
@@ -75,15 +78,42 @@ int main(int argc , char *argv[])
 		recieved_value |= ((unsigned int)received_buffer[i] << (i * 8));
 	}
 
-    unsigned int publicKey = FME(base, exponentPrivate, modulus);
+	unsigned int Bobe;
+	recv(socket_desc, received_buffer, sizeof(unsigned int), 0);
+	for(int i = 0; i < sizeof(unsigned int); i++) {
+		Bobe |= ((unsigned int)received_buffer[i] << (i * 8));
+	}
+
+	unsigned int Bobn;
+	recv(socket_desc, received_buffer, sizeof(unsigned int), 0);
+	for(int i = 0; i < sizeof(unsigned int); i++) {
+		Bobn |= ((unsigned int)received_buffer[i] << (i * 8));
+	}
+
+	unsigned int AuthenticationB = FME(recieved_value, Bobe, Bobn);
+
+    unsigned int publicKey1 = FME(base, exponentPrivate, modulus);
+
+	unsigned int publicKey = FME(publicKey1, d, n);
 
 	for(int i = 0; i < sizeof(unsigned int); i++) {
     received_buffer[i] = (publicKey >> (i * 8)) & 0xFF;
 	}
 	send(socket_desc, received_buffer, sizeof(unsigned int), 0);
 
+	for(int i = 0; i < sizeof(unsigned int); i++) {
+    received_buffer[i] = (e >> (i * 8)) & 0xFF;
+	}
+	send(socket_desc, received_buffer, sizeof(unsigned int), 0);
 
-    unsigned int sharedKey = FME(recieved_value, exponentPrivate, modulus);
+	for(int i = 0; i < sizeof(unsigned int); i++) {
+    received_buffer[i] = (n >> (i * 8)) & 0xFF;
+	}
+	send(socket_desc, received_buffer, sizeof(unsigned int), 0);
+
+	printf("%u\n", AuthenticationB);
+
+    //unsigned int sharedKey = FME(recieved_value, exponentPrivate, modulus);
 
 
 	//Get data from keyboard and send  to server
@@ -99,7 +129,7 @@ int main(int argc , char *argv[])
 		
 		// Iterate through each character and convert to uppercase
 		for(int i = 0; i < strlen(client_message); i++) {
-			client_message[i] = keysDecrypt(client_message[i], sharedKey);
+			//client_message[i] = keysDecrypt(client_message[i], sharedKey);
 		}
 
 		if( send(socket_desc , &client_message, strlen(client_message) , 0) < 0)

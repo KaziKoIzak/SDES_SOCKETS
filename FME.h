@@ -69,8 +69,6 @@ unsigned int FME(unsigned int base, unsigned int exponent, unsigned int modulus)
 {
     unsigned int result = fastModExpo(base, exponent, modulus);
 
-    printf("%u^%u mod %u = %u\n", base, exponent, modulus, result);
-
     return result;
 }
 
