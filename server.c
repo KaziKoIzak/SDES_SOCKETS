@@ -19,6 +19,16 @@
 
 int main(int argc , char *argv[])
 {
+	unsigned int e, d, p, q, n;
+	printf("Choose a prime! ");
+	scanf("%u", &p);
+	printf("Choose another prime! ");
+	scanf("%u", &q);
+
+	e = basicallyRSA(p, q);
+	d = DRSA(p, q);
+	n = PrimeN(p, q);
+	
 	int socket_desc , new_socket , c, read_size, i;
 	struct sockaddr_in server , client;
 	char *message, client_message[100];

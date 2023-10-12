@@ -17,6 +17,16 @@
 
 int main(int argc , char *argv[])
 {
+	unsigned int e, d, p, q, n;
+	printf("Choose a prime! ");
+	scanf("%u", &p);
+	printf("Choose another prime! ");
+	scanf("%u", &q);
+
+	e = basicallyRSA(p, q);
+	d = DRSA(p, q);
+	n = PrimeN(p, q);
+
 	int socket_desc;    // file descripter returned by socket command
 	int read_size;
 	struct sockaddr_in server;    // in arpa/inet.h

@@ -463,7 +463,7 @@ char Hash(unsigned char *pixels, int size, long long something)
     return pixels[size-1];
 }
 
-unsigned int nearlyRSA(unsigned int n, unsigned int totient_n, unsigned int x)
+unsigned int Private(unsigned int n, unsigned int totient_n, unsigned int x)
 {
     if(x >= totient_n)
     {
@@ -488,9 +488,34 @@ unsigned int basicallyRSA(unsigned int p, unsigned int q)
 
     unsigned int e = findSmallestRelativelyPrime(totient_n);
 
-    unsigned int d = nearlyRSA(n, totient_n, e);
+    return e;
+}
+
+unsigned int DRSA(unsigned int p, unsigned int q)
+{
+    unsigned int n = p*q;
+    unsigned int totient_n = (p-1)*(q-1);
+
+    unsigned int e = findSmallestRelativelyPrime(totient_n);
+
+    unsigned int d = Private(n, totient_n, e);
 
     return d;
+}
+
+unsigned int PrimeN(unsigned int p, unsigned int q)
+{
+    return p * q;
+}
+
+unsigned int RSAEncrypt(unsigned int message, unsigned int e, unsigned int n)
+{
+    return FME(message, e, n);
+}
+
+unsigned int RSADecrypt(unsigned int message, unsigned int d, unsigned int n)
+{
+    return FME(message, d, n);
 }
 
 #endif
