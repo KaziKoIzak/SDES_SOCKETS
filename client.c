@@ -7,28 +7,46 @@
 *                                  RSF    11/14/20
 *
 ****************************************************/
-#include<stdio.h>      // used printf/scanf for demo (puts/getchar would be leaner)
-#include<string.h>	
-#include<sys/socket.h>
-#include<arpa/inet.h>  // for inet_addr and sockaddr_in structs
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <string.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <unistd.h>
 #include "FME.h"
 #include "SDES.h"
 #include<stdlib.h>
 
+void send_unsigned_int(int sockfd, uint32_t num) {
+    // Convert to network byte order
+    uint32_t num_n = htonl(num);
+
+    // Send the data
+    send(sockfd, &num_n, sizeof(uint32_t), 0);
+}
+
+uint32_t receive_unsigned_int(int sockfd) {
+    uint32_t received_num;
+
+    // Receive the data
+    recv(sockfd, &received_num, sizeof(uint32_t), 0);
+
+    // Convert back to host byte order
+    return ntohl(received_num);
+}
+
 int main(int argc , char *argv[])
 {
 	unsigned int e, d, p, q, n;
-	printf("Choose a prime! ");
-	scanf("%u", &p);
-	printf("Choose another prime! ");
-	scanf("%u", &q);
+	p = 13;
+	q = 17;
+	unsigned int exponentPrivate = 10137;
 
 	e = basicallyRSA(p, q);
-	printf("%u\n", e);
 	d = DRSA(p, q);
-	printf("%u\n", d);
 	n = PrimeN(p, q);
-	printf("%u\n", n);
 
 	int socket_desc;    // file descripter returned by socket command
 	int read_size;
@@ -56,65 +74,20 @@ int main(int argc , char *argv[])
 		return 1;
 	}
 
-	unsigned int exponentPrivate = 1012437;
+	unsigned int base = receive_unsigned_int(socket_desc);
+	unsigned int modulus = receive_unsigned_int(socket_desc);
+	unsigned int bobPublic = receive_unsigned_int(socket_desc);
+	unsigned int bobE = receive_unsigned_int(socket_desc);
+	unsigned int bobN = receive_unsigned_int(socket_desc);
+	unsigned int publicKey1 = FME(base, exponentPrivate, modulus);
+	unsigned int publicKey = FME(publicKey1, d, n); 
+	send_unsigned_int(socket_desc, publicKey);
+	send_unsigned_int(socket_desc, e);
+	send_unsigned_int(socket_desc, n);
 
-	unsigned char received_buffer[sizeof(unsigned int)];
-	recv(socket_desc, received_buffer, sizeof(unsigned int), 0);
+	unsigned int authentication = FME(bobPublic, bobE, bobN);
 
-	unsigned int base;
-	for(int i = 0; i < sizeof(unsigned int); i++) {
-		base |= ((unsigned int)received_buffer[i] << (i * 8));
-	}
-
-	unsigned int modulus;
-	recv(socket_desc, received_buffer, sizeof(unsigned int), 0);
-	for(int i = 0; i < sizeof(unsigned int); i++) {
-		modulus |= ((unsigned int)received_buffer[i] << (i * 8));
-	}
-
-	unsigned int recieved_value;
-	recv(socket_desc, received_buffer, sizeof(unsigned int), 0);
-	for(int i = 0; i < sizeof(unsigned int); i++) {
-		recieved_value |= ((unsigned int)received_buffer[i] << (i * 8));
-	}
-
-	unsigned int Bobe;
-	recv(socket_desc, received_buffer, sizeof(unsigned int), 0);
-	for(int i = 0; i < sizeof(unsigned int); i++) {
-		Bobe |= ((unsigned int)received_buffer[i] << (i * 8));
-	}
-
-	unsigned int Bobn;
-	recv(socket_desc, received_buffer, sizeof(unsigned int), 0);
-	for(int i = 0; i < sizeof(unsigned int); i++) {
-		Bobn |= ((unsigned int)received_buffer[i] << (i * 8));
-	}
-
-	unsigned int AuthenticationB = FME(recieved_value, Bobe, Bobn);
-
-    unsigned int publicKey1 = FME(base, exponentPrivate, modulus);
-
-	unsigned int publicKey = FME(publicKey1, d, n);
-
-	for(int i = 0; i < sizeof(unsigned int); i++) {
-    received_buffer[i] = (publicKey >> (i * 8)) & 0xFF;
-	}
-	send(socket_desc, received_buffer, sizeof(unsigned int), 0);
-
-	for(int i = 0; i < sizeof(unsigned int); i++) {
-    received_buffer[i] = (e >> (i * 8)) & 0xFF;
-	}
-	send(socket_desc, received_buffer, sizeof(unsigned int), 0);
-
-	for(int i = 0; i < sizeof(unsigned int); i++) {
-    received_buffer[i] = (n >> (i * 8)) & 0xFF;
-	}
-	send(socket_desc, received_buffer, sizeof(unsigned int), 0);
-
-	printf("%u\n", AuthenticationB);
-
-    //unsigned int sharedKey = FME(recieved_value, exponentPrivate, modulus);
-
+	printf("%u\n", authentication);
 
 	//Get data from keyboard and send  to server
 	printf("What do you want to send to the server. (b for bye)\n");

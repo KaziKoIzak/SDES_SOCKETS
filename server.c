@@ -9,28 +9,49 @@
 ****************************************************/
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <arpa/inet.h>
+#include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
 #include"FME.h"
 #include "SDES.h"
 #include<stdlib.h>
 
+void send_unsigned_int(int sockfd, uint32_t num) {
+    // Convert to network byte order
+    uint32_t num_n = htonl(num);
+
+    // Send the data
+    send(sockfd, &num_n, sizeof(uint32_t), 0);
+}
+
+uint32_t receive_unsigned_int(int sockfd) {
+    uint32_t received_num;
+
+    // Receive the data
+    recv(sockfd, &received_num, sizeof(uint32_t), 0);
+
+    // Convert back to host byte order
+    return ntohl(received_num);
+}
+
 int main(int argc , char *argv[])
 {
 	unsigned int e, d, p, q, n;
-	printf("Choose a prime! ");
-	scanf("%u", &p);
-	printf("Choose another prime! ");
-	scanf("%u", &q);
+	p = 7;
+	q = 11;
+	unsigned int base = 11;
+	unsigned int modulus = 257;
+	unsigned int exponentPrivate = 127821;
+
+	unsigned int publicKey1 = FME(base, exponentPrivate, modulus);
+	unsigned int publicKey = FME(publicKey1, d, n);
 
 	e = basicallyRSA(p, q);
-	printf("%u\n", e);
 	d = DRSA(p, q);
-	printf("%u\n", d);
 	n = PrimeN(p, q);
-	printf("%u\n", n);
 	
 	int socket_desc , new_socket , c, read_size, i;
 	struct sockaddr_in server , client;
@@ -79,65 +100,20 @@ int main(int argc , char *argv[])
 	//Reply to the client
 	message = "You have located Server X at our undisclosed location.  What would you like to say?\n";
 	//write(new_socket , message , strlen(message));
-	unsigned int base = 7;
-	unsigned int modulus = 257;
-	unsigned int exponent = 127883921;
 
-    unsigned int publicKey1 = FME(base, exponent, modulus);
 
-	unsigned char buffer[sizeof(unsigned int)];
-	for(int i = 0; i < sizeof(unsigned int); i++) {
-    buffer[i] = (base >> (i * 8)) & 0xFF;
-	}
+    send_unsigned_int(new_socket, base);
+    send_unsigned_int(new_socket, modulus);
+    send_unsigned_int(new_socket, publicKey);
+    send_unsigned_int(new_socket, e);
+    send_unsigned_int(new_socket, n);
+	unsigned int AlicePublic = receive_unsigned_int(new_socket);
+	unsigned int AlicE = receive_unsigned_int(new_socket);
+	unsigned int AliceN = receive_unsigned_int(new_socket);
 
-	send(new_socket, buffer, sizeof(unsigned int), 0);
-	
-	for(int i = 0; i < sizeof(unsigned int); i++) {
-    buffer[i] = (modulus >> (i * 8)) & 0xFF;
-	}
+	unsigned int Authentication = FME(AlicePublic, AlicE, AliceN);
 
-	send(new_socket, buffer, sizeof(unsigned int), 0);
-
-	unsigned int publicKey = FME(publicKey1, d, n);
-
-	for(int i = 0; i < sizeof(unsigned int); i++) {
-    buffer[i] = (publicKey >> (i * 8)) & 0xFF;
-	}
-	send(new_socket, buffer, sizeof(unsigned int), 0);
-
-	for(int i = 0; i < sizeof(unsigned int); i++) {
-    buffer[i] = (e >> (i * 8)) & 0xFF;
-	}
-	send(new_socket, buffer, sizeof(unsigned int), 0);
-
-	for(int i = 0; i < sizeof(unsigned int); i++) {
-    buffer[i] = (n >> (i * 8)) & 0xFF;
-	}
-	send(new_socket, buffer, sizeof(unsigned int), 0);
-
-	unsigned int recieved_value;
-	recv(new_socket, buffer, sizeof(unsigned int), 0);
-	for(int i = 0; i < sizeof(unsigned int); i++) {
-		recieved_value |= ((unsigned int)buffer[i] << (i * 8));
-	}
-
-	unsigned int AliceE;
-	recv(new_socket, buffer, sizeof(unsigned int), 0);
-	for(int i = 0; i < sizeof(unsigned int); i++) {
-		recieved_value |= ((unsigned int)buffer[i] << (i * 8));
-	}
-
-	unsigned int AliceN;
-	recv(new_socket, buffer, sizeof(unsigned int), 0);
-	for(int i = 0; i < sizeof(unsigned int); i++) {
-		recieved_value |= ((unsigned int)buffer[i] << (i * 8));
-	}
-
-	unsigned int AuthenticationA = FME(recieved_value, AliceE, AliceN);
-
-	printf("%u\n", AuthenticationA);
-
-    //unsigned int sharedKey = FME(recieved_value, exponent, modulus);
+	printf("%u\n", Authentication);
 
 	//Receive a message from client
 	while( (read_size = recv(new_socket , client_message , 100 , 0)) > 0 )
