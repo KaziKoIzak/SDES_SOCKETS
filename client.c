@@ -40,13 +40,16 @@ uint32_t receive_unsigned_int(int sockfd) {
 int main(int argc , char *argv[])
 {
 	unsigned int e, d, p, q, n;
-	p = 13;
-	q = 17;
-	unsigned int exponentPrivate = 10137;
+	p = 23;
+	q = 29;
+	unsigned int exponentPrivate = 7919;
 
 	e = basicallyRSA(p, q);
-	d = DRSA(p, q);
+	d = DRSA(p, q, e);
 	n = PrimeN(p, q);
+
+	printf("%u\n", e);
+	printf("%u\n", d);
 
 	int socket_desc;    // file descripter returned by socket command
 	int read_size;
@@ -85,8 +88,18 @@ int main(int argc , char *argv[])
 	send_unsigned_int(socket_desc, e);
 	send_unsigned_int(socket_desc, n);
 
+	printf("%u\n", e);
+	printf("%u\n", n);
+	printf("%u\n", publicKey);
+	printf("%u\n", bobE);
+	printf("%u\n", bobN);
+	printf("%u\n", bobPublic);
+
 	unsigned int authentication = FME(bobPublic, bobE, bobN);
 
+	printf("\n");
+
+	printf("%u\n", publicKey1);
 	printf("%u\n", authentication);
 
 	//Get data from keyboard and send  to server

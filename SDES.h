@@ -463,42 +463,22 @@ char Hash(unsigned char *pixels, int size, long long something)
     return pixels[size-1];
 }
 
-unsigned int Private(unsigned int n, unsigned int totient_n, unsigned int x)
-{
-    if(x >= totient_n)
-    {
-        printf("Invalid, x bigger than totient\n");
-        return 1;
-    }
-
-    unsigned int inverse = modInverse(x, totient_n);
-    if(inverse == -1)
-    {
-        printf("Invalid, No Inverse\n");
-        return 1;
-    }
-
-    return inverse;
-}
-
 unsigned int basicallyRSA(unsigned int p, unsigned int q)
 {
     unsigned int n = p*q;
     unsigned int totient_n = (p-1)*(q-1);
 
-    unsigned int e = findSmallestRelativelyPrime(totient_n);
+    unsigned int e = find_smallest_relative_prime(totient_n);
 
     return e;
 }
 
-unsigned int DRSA(unsigned int p, unsigned int q)
+unsigned int DRSA(unsigned int p, unsigned int q, unsigned int e)
 {
     unsigned int n = p*q;
     unsigned int totient_n = (p-1)*(q-1);
 
-    unsigned int e = findSmallestRelativelyPrime(totient_n);
-
-    unsigned int d = Private(n, totient_n, e);
+    unsigned int d = modInverse(e, totient_n);
 
     return d;
 }

@@ -4,47 +4,57 @@
 #include <stdio.h>
 
 unsigned int gcd(unsigned int a, unsigned int b) {
-    if (b == 0) return a;
+    if (b == 0)
+        return a;
     return gcd(b, a % b);
 }
 
-unsigned int findSmallestRelativelyPrime(unsigned int n) {
-    unsigned int x = 2;
-
-    while (gcd(n, x) != 1) {
-        x++;
+unsigned int find_smallest_relative_prime(unsigned int num) {
+    unsigned int relative_prime = num - 1;
+    while (gcd(num, relative_prime) != 1) {
+        relative_prime--;
     }
-
-    return x;
+    
+    return relative_prime;
 }
-
-unsigned int extendedGCD(unsigned int a, unsigned int b, unsigned int *x, unsigned int *y) {
+ 
+// Function for extended Euclidean Algorithm
+int gcdExtended(int a, int b, int* x, int* y)
+{
+ 
+    // Base Case
     if (a == 0) {
-        *x = 0;
-        *y = 1;
+        *x = 0, *y = 1;
         return b;
     }
-
-    unsigned int x1, y1;
-    unsigned int gcde = extendedGCD(b % a, a, &x1, &y1);
-
+ 
+    // To store results of recursive call
+    int x1, y1;
+    int gcd = gcdExtended(b % a, a, &x1, &y1);
+ 
+    // Update x and y using results of recursive
+    // call
     *x = y1 - (b / a) * x1;
     *y = x1;
-
-    return gcde;
+ 
+    return gcd;
 }
 
-unsigned int modInverse(unsigned int a, unsigned int m) {
-    unsigned int x, y;
-    unsigned int gcde = extendedGCD(a, m, &x, &y);
-
-    if (gcde != 1) {
-        // Modular inverse does not exist
-        return -1;
+// Function to find modulo inverse of a
+unsigned int modInverse(int A, int M)
+{
+    int x, y;
+    int g = gcdExtended(A, M, &x, &y);
+    if (g != 1)
+        printf("Inverse doesn't exist");
+    else {
+ 
+        // m is added to handle negative x
+        unsigned int res = (x % M + M) % M;
+        return res;
     }
 
-    // Ensure the result is positive
-    return (x % m + m) % m;
+    return 0;
 }
 
 unsigned int fastModExpo(unsigned int base, unsigned int exponent, unsigned int modulus)

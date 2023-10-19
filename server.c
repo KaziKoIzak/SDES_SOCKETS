@@ -44,14 +44,14 @@ int main(int argc , char *argv[])
 	q = 11;
 	unsigned int base = 11;
 	unsigned int modulus = 257;
-	unsigned int exponentPrivate = 127821;
-
-	unsigned int publicKey1 = FME(base, exponentPrivate, modulus);
-	unsigned int publicKey = FME(publicKey1, d, n);
+	unsigned int exponentPrivate = 6869;
 
 	e = basicallyRSA(p, q);
-	d = DRSA(p, q);
+	d = DRSA(p, q, e);
 	n = PrimeN(p, q);
+
+	printf("%u\n", e);
+	printf("%u\n", d);
 	
 	int socket_desc , new_socket , c, read_size, i;
 	struct sockaddr_in server , client;
@@ -101,7 +101,8 @@ int main(int argc , char *argv[])
 	message = "You have located Server X at our undisclosed location.  What would you like to say?\n";
 	//write(new_socket , message , strlen(message));
 
-
+	unsigned int publicKey1 = FME(base, exponentPrivate, modulus);
+	unsigned int publicKey = FME(publicKey1, d, n);
     send_unsigned_int(new_socket, base);
     send_unsigned_int(new_socket, modulus);
     send_unsigned_int(new_socket, publicKey);
@@ -111,14 +112,24 @@ int main(int argc , char *argv[])
 	unsigned int AlicE = receive_unsigned_int(new_socket);
 	unsigned int AliceN = receive_unsigned_int(new_socket);
 
+	printf("%u\n", AlicE);
+	printf("%u\n", AliceN);
+	printf("%u\n", AlicePublic);
+	printf("%u\n", e);
+	printf("%u\n", n);
+	printf("%u\n", publicKey);
+
 	unsigned int Authentication = FME(AlicePublic, AlicE, AliceN);
+	unsigned int checker = FME(publicKey, e, n);
+
+	printf("\n");
 
 	printf("%u\n", Authentication);
+	printf("%u", checker);
 
 	//Receive a message from client
 	while( (read_size = recv(new_socket , client_message , 100 , 0)) > 0 )
 	{
-
 		printf("\n Client sent %2i byte message:  %.*s\n",read_size, read_size ,client_message);
 
 		if(!strncmp(client_message,"showMe",6)) 
