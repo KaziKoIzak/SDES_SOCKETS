@@ -18,6 +18,7 @@
 #include"FME.h"
 #include "SDES.h"
 #include<stdlib.h>
+#include "Rand.h"
 
 void send_unsigned_int(int sockfd, uint32_t num) {
     // Convert to network byte order
@@ -39,12 +40,18 @@ uint32_t receive_unsigned_int(int sockfd) {
 
 int main(int argc , char *argv[])
 {
-	unsigned int e, d, p, q, n;
-	p = 7;
-	q = 11;
-	unsigned int base = 11;
-	unsigned int modulus = 257;
-	unsigned int exponentPrivate = 6869;
+	unsigned int e, p, q, n;
+	int d;
+	// p = randomPrime();
+	// q = randomPrime();
+	// unsigned int modulus = randomPrime();
+	// unsigned int base = primitiveRoot(modulus);
+	// unsigned int exponentPrivate = randomPrime();
+	p = 31;
+	q = 37;
+	unsigned int modulus = 97;
+	unsigned int base = 3;
+	unsigned int exponentPrivate = 101;
 
 	e = basicallyRSA(p, q);
 	d = DRSA(p, q, e);
@@ -97,10 +104,6 @@ int main(int argc , char *argv[])
 	
 	printf("Connection accepted\n");
 
-	//Reply to the client
-	message = "You have located Server X at our undisclosed location.  What would you like to say?\n";
-	//write(new_socket , message , strlen(message));
-
 	unsigned int publicKey1 = FME(base, exponentPrivate, modulus);
 	unsigned int publicKey = FME(publicKey1, d, n);
     send_unsigned_int(new_socket, base);
@@ -125,7 +128,11 @@ int main(int argc , char *argv[])
 	printf("\n");
 
 	printf("%u\n", Authentication);
-	printf("%u", checker);
+	printf("%u\n", checker);
+
+	unsigned int sharedKey = FME(Authentication, exponentPrivate, modulus);
+
+	printf("%u\n", sharedKey);
 
 	//Receive a message from client
 	while( (read_size = recv(new_socket , client_message , 100 , 0)) > 0 )
@@ -144,7 +151,7 @@ int main(int argc , char *argv[])
 		//Send the message back to client
 		for(i=0;i< read_size;i++)
 		{
-			//client_message[i] = keysDecrypt(client_message[i], sharedKey);
+			client_message[i] = keysDecrypt(client_message[i], sharedKey);
 		}
 
         printf(" Sending back decrypted message:  %.*s \n", read_size ,client_message);

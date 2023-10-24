@@ -18,6 +18,7 @@
 #include "FME.h"
 #include "SDES.h"
 #include<stdlib.h>
+#include "Rand.h"
 
 void send_unsigned_int(int sockfd, uint32_t num) {
     // Convert to network byte order
@@ -39,10 +40,14 @@ uint32_t receive_unsigned_int(int sockfd) {
 
 int main(int argc , char *argv[])
 {
-	unsigned int e, d, p, q, n;
+	unsigned int e, p, q, n;
+	int d;
+	// p = randomPrime();
+	// q = randomPrime();
+	// unsigned int exponentPrivate = randomPrime();
 	p = 23;
 	q = 29;
-	unsigned int exponentPrivate = 7919;
+	unsigned int exponentPrivate = 71;
 
 	e = basicallyRSA(p, q);
 	d = DRSA(p, q, e);
@@ -102,6 +107,9 @@ int main(int argc , char *argv[])
 	printf("%u\n", publicKey1);
 	printf("%u\n", authentication);
 
+	unsigned int sharedKey = FME(authentication, exponentPrivate, modulus);
+	printf("%u\n", sharedKey);
+
 	//Get data from keyboard and send  to server
 	printf("What do you want to send to the server. (b for bye)\n");
 	while(strncmp(client_message,"b",1))      // quit on "b" for "bye"
@@ -115,7 +123,7 @@ int main(int argc , char *argv[])
 		
 		// Iterate through each character and convert to uppercase
 		for(int i = 0; i < strlen(client_message); i++) {
-			//client_message[i] = keysDecrypt(client_message[i], sharedKey);
+			client_message[i] = keysDecrypt(client_message[i], sharedKey);
 		}
 
 		if( send(socket_desc , &client_message, strlen(client_message) , 0) < 0)

@@ -41,16 +41,16 @@ int gcdExtended(int a, int b, int* x, int* y)
 }
 
 // Function to find modulo inverse of a
-unsigned int modInverse(int A, int M)
+int modInverse(int A, int M)
 {
     int x, y;
     int g = gcdExtended(A, M, &x, &y);
     if (g != 1)
-        printf("Inverse doesn't exist");
+        printf("\n");
     else {
  
         // m is added to handle negative x
-        unsigned int res = (x % M + M) % M;
+        int res = (x % M + M) % M;
         return res;
     }
 

@@ -473,12 +473,12 @@ unsigned int basicallyRSA(unsigned int p, unsigned int q)
     return e;
 }
 
-unsigned int DRSA(unsigned int p, unsigned int q, unsigned int e)
+int DRSA(unsigned int p, unsigned int q, unsigned int e)
 {
     unsigned int n = p*q;
     unsigned int totient_n = (p-1)*(q-1);
 
-    unsigned int d = modInverse(e, totient_n);
+    int d = modInverse(e, totient_n);
 
     return d;
 }
