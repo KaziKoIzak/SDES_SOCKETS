@@ -76,8 +76,8 @@ int main(int argc , char *argv[])
 	q = genRandPrime();
 	printf("\n\nI am the CLIENT\n");
 	printf("my p: %u (randomly generated)\n", p);
-	printf("my q: %u (randomly generated)\n", q);
-	unsigned int exponentPrivate = 11;
+	printf("my q: %u (randomly generated)", q);
+	unsigned int exponentPrivate = genRandPrime();
 
 	e = basicallyRSA(p, q);
 	d = DRSA(p, q, e);
@@ -126,11 +126,11 @@ int main(int argc , char *argv[])
 	send_unsigned_int(socket_desc, e);
 	send_unsigned_int(socket_desc, n);
 
-	printf("\nBase: %u (received from server)\n", base);
+	printf("Base: %u (received from server)\n", base);
 	printf("Modulus: %u (received from server)\n", modulus);
-	//printf("Server's E %u\n", serverE);
-	//printf("Server's N %u\n", serverN);
-	printf("\nMy RSA Public Key: %u\n", publicKey);
+	printf("Server's E %u\n", serverE);
+	printf("Server's N %u\n", serverN);
+	printf("My RSA Public Key: %u\n", publicKey);
 	printf("My D-H Public Key: %u\n", publicKey1);
 	printf("Server's RSA Public Key: %u\n", serverPublicKey);
 	
@@ -139,7 +139,7 @@ int main(int argc , char *argv[])
 	//printf("auth: %u\n", authentication);
 
 	unsigned int sharedKey = FME(authentication, exponentPrivate, modulus);
-	printf("\nShared D-H Key: %u\n", sharedKey);
+	printf("Shared D-H Key: %u\n", sharedKey);
 
 	intToBinaryArray(sharedKey, array);
 	copyerArray(array);

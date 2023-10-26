@@ -46,20 +46,38 @@ uint32_t receive_unsigned_int(int sockfd) {
     return ntohl(received_num);
 }
 
+#include <time.h>
+
+unsigned int genRandPrime() {
+    // Array of 50 prime numbers
+    unsigned int primes[50] = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71,
+                      73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 
+					  157, 163,167 ,173 ,179 ,181 ,191 ,193 ,197 ,199 ,211 ,223 ,227 ,229};
+
+    // Seed the random number generator with the current time
+    srand(clock());
+
+    // Generate a random index between 0 and 49
+    int random_index = rand() % 50;
+
+    return primes[random_index];
+}
 
 int main(int argc , char *argv[])
 {
 	unsigned int e, p, q, n;
 	int d;
 	int array[10];
-	p = 17;
-	q = 11;
-	printf("%u\n", p);
-	printf("%u\n", q);
-	unsigned int modulus = 257;
+	p = genRandPrime();
+	q = genRandPrime();
+	printf("\n\nI am the Server\n");
+	printf("my p: %u (randomly generated)\n", p);
+	printf("my q: %u (randomly generated)", q);
+	unsigned int modulus = genRandPrime();
 	unsigned int base = 3;
-	unsigned int exponentPrivate = 7;
-
+	unsigned int exponentPrivate = genRandPrime();
+	printf("my modulus: %u (randomly generated)\n", modulus);
+	printf("my base: %u (randomly generated)", base);
 	e = basicallyRSA(p, q);
 	d = DRSA(p, q, e);
 	n = PrimeN(p, q);
@@ -123,24 +141,21 @@ int main(int argc , char *argv[])
 	unsigned int AlicE = receive_unsigned_int(new_socket);
 	unsigned int AliceN = receive_unsigned_int(new_socket);
 
-	printf("%u\n", AlicE);
-	printf("%u\n", AliceN);
-	printf("%u\n", AlicePublic);
-	printf("%u\n", e);
-	printf("%u\n", n);
-	printf("%u\n", publicKey);
+	printf("Alice's Public E: %u\n", AlicE);
+	printf("Alice's Public N: %u\n", AliceN);
+	printf("Alice's Public Privately Encrypted: %u\n", AlicePublic);
+	printf("Bob E: %u\n", e);
+	printf("Bob N: %u\n", n);
+	printf("Bob Public Privately Encrypted: %u\n", publicKey);
 
 	unsigned int Authentication = FME(AlicePublic, AlicE, AliceN);
 	unsigned int Check = FME(publicKey, e, n);
 
-	printf("\n");
-
-	printf("%u\n", Authentication);
-	printf("%u\n", Check);
+	printf("Alice Public Authentication: %u\n", Authentication);
 
 	unsigned int sharedKey = FME(Authentication, exponentPrivate, modulus);
 
-	printf("%u\n", sharedKey);
+	printf("SHARED Diffie Key: %u\n", sharedKey);
 
 	intToBinaryArray(sharedKey, array);
 	copyerArray(array);
