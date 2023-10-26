@@ -10,9 +10,9 @@ unsigned int gcd(unsigned int a, unsigned int b) {
 }
 
 unsigned int find_smallest_relative_prime(unsigned int num) {
-    unsigned int relative_prime = num - 1;
+    unsigned int relative_prime = 2;
     while (gcd(num, relative_prime) != 1) {
-        relative_prime--;
+        relative_prime++;
     }
     
     return relative_prime;

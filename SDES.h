@@ -12,7 +12,7 @@ int IP[] = {2, 6, 3, 1, 4, 8, 5, 7};
 // Final permutation table (inverse of initial permutation)
 int FP[] = {4, 1, 3, 5, 7, 2, 8, 6};
 
-int key[] = {0, 1, 0, 1, 0, 0, 0, 1, 0, 1};
+int key[] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 int subKey1[] = {0, 0, 0, 0, 0, 0, 0, 0};
 
@@ -43,7 +43,13 @@ int P8[] = {6, 3, 7, 4, 8, 5, 10, 9};
 
 int P10[] = {3, 5, 2, 7, 4, 10, 1, 9, 8, 6};
 
-void convertToBinaryArray(long long num, int binaryArray[], int size) {
+void copyerArray(int source[]) {
+    for(int i = 0; i < 10; i++) {
+        key[i] = source[i];
+    }
+}
+
+void convertToBinaryArray(unsigned int num, int binaryArray[], int size) {
     for (int i = size - 1; i >= 0; i--) {
         binaryArray[i] = num % 2;
         num /= 2;
@@ -407,12 +413,11 @@ char decryptPixels(char character)
     return character = binaryArrayToChar(plaintext);   
 }
 
-void keys(long long something){
+void keys(){
     char character;
     int output[10];
     int count = 0;
     int i = 0;
-    convertToBinaryArray(something, key, 10);
 
     for (int i = 0; i < 10; i++)
     {
@@ -432,25 +437,10 @@ void keys(long long something){
     copyArray(key, subKey2, 8);
 }
 
-char keysEncrypt(char character, long long something)
+char Hash(unsigned char *pixels, int size, int * something)
 {
-    keys(something);
-    encryptPixels(character);
-
-    return character;
-}
-
-char keysDecrypt(char character, long long something)
-{
-    keys(something);
-    decryptPixels(character);
-
-    return character;
-}
-
-char Hash(unsigned char *pixels, int size, long long something)
-{
-    keys(something);
+    copyerArray(something);
+    keys();
     for (int i = 0; i < size; i++)
     {
         charToBinary(pixels[i], plaintext);
@@ -462,40 +452,4 @@ char Hash(unsigned char *pixels, int size, long long something)
 
     return pixels[size-1];
 }
-
-unsigned int basicallyRSA(unsigned int p, unsigned int q)
-{
-    unsigned int n = p*q;
-    unsigned int totient_n = (p-1)*(q-1);
-
-    unsigned int e = find_smallest_relative_prime(totient_n);
-
-    return e;
-}
-
-int DRSA(unsigned int p, unsigned int q, unsigned int e)
-{
-    unsigned int n = p*q;
-    unsigned int totient_n = (p-1)*(q-1);
-
-    int d = modInverse(e, totient_n);
-
-    return d;
-}
-
-unsigned int PrimeN(unsigned int p, unsigned int q)
-{
-    return p * q;
-}
-
-unsigned int RSAEncrypt(unsigned int message, unsigned int e, unsigned int n)
-{
-    return FME(message, e, n);
-}
-
-unsigned int RSADecrypt(unsigned int message, unsigned int d, unsigned int n)
-{
-    return FME(message, d, n);
-}
-
 #endif

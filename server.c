@@ -19,6 +19,14 @@
 #include "SDES.h"
 #include<stdlib.h>
 #include "Rand.h"
+#include "RSA.h"
+
+void intToBinaryArray(unsigned int num, int* binaryArray) {
+    for(int i = 9; i >= 0; i--) {
+        binaryArray[i] = num & 1;
+        num >>= 1;
+    }
+}
 
 void send_unsigned_int(int sockfd, uint32_t num) {
     // Convert to network byte order
@@ -38,15 +46,12 @@ uint32_t receive_unsigned_int(int sockfd) {
     return ntohl(received_num);
 }
 
+
 int main(int argc , char *argv[])
 {
 	unsigned int e, p, q, n;
 	int d;
-	// p = randomPrime();
-	// q = randomPrime();
-	// unsigned int modulus = randomPrime();
-	// unsigned int base = primitiveRoot(modulus);
-	// unsigned int exponentPrivate = randomPrime();
+	int array[10];
 	p = 17;
 	q = 11;
 	printf("%u\n", p);
@@ -59,12 +64,13 @@ int main(int argc , char *argv[])
 	d = DRSA(p, q, e);
 	n = PrimeN(p, q);
 
-	printf("%u\n", e);
-	printf("%u\n", d);
+	printf("\nmy e: %u\n", e);
+	printf("my d: %u\n", d);
 	
 	int socket_desc , new_socket , c, read_size, i;
 	struct sockaddr_in server , client;
 	char *message, client_message[100];
+	char decrypted_message[100];
 
 	char *list;	
 	list = "ls -l\n";
@@ -136,10 +142,14 @@ int main(int argc , char *argv[])
 
 	printf("%u\n", sharedKey);
 
+	intToBinaryArray(sharedKey, array);
+	copyerArray(array);
+	keys();
+
 	//Receive a message from client
 	while( (read_size = recv(new_socket , client_message , 100 , 0)) > 0 )
 	{
-		printf("\n Client sent %2i byte message:  %.*s\n",read_size, read_size ,client_message);
+		printf("\n Client sent Encyrpted %2i byte message:  %.*s\n",read_size, read_size ,client_message);
 
 		if(!strncmp(client_message,"showMe",6)) 
 		{
@@ -148,18 +158,15 @@ int main(int argc , char *argv[])
 			printf("\n\n");
 		}
 
-		
-
 		//Send the message back to client
 		for(i=0;i< read_size;i++)
 		{
-			client_message[i] = keysDecrypt(client_message[i], sharedKey);
+			decrypted_message[i] = decryptPixels(client_message[i]);
 		}
 
-        printf(" Sending back decrypted message:  %.*s \n", read_size ,client_message);
+        printf(" Sending back decrypted message:  %.*s \n", read_size ,decrypted_message);
 
-		//write(new_socket, client_message , strlen(client_message));
-		write(new_socket, client_message , read_size);
+		write(new_socket, decrypted_message , read_size);
 	}
 	
 	if(read_size == 0)

@@ -19,6 +19,14 @@
 #include "SDES.h"
 #include<stdlib.h>
 #include "Rand.h"
+#include "RSA.h"
+
+void intToBinaryArray(unsigned int num, int* binaryArray) {
+    for(int i = 9; i >= 0; i--) {
+        binaryArray[i] = num & 1;
+        num >>= 1;
+    }
+}
 
 void send_unsigned_int(int sockfd, uint32_t num) {
     // Convert to network byte order
@@ -38,30 +46,51 @@ uint32_t receive_unsigned_int(int sockfd) {
     return ntohl(received_num);
 }
 
+#include <time.h>
+
+unsigned int genRandPrime() {
+    // Array of 50 prime numbers
+    unsigned int primes[50] = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71,
+                      73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 
+					  157, 163,167 ,173 ,179 ,181 ,191 ,193 ,197 ,199 ,211 ,223 ,227 ,229};
+
+    // Seed the random number generator with the current time
+    srand(clock());
+
+    // Generate a random index between 0 and 49
+    int random_index = rand() % 50;
+
+    return primes[random_index];
+}
+
+
 int main(int argc , char *argv[])
 {
 	unsigned int e, p, q, n;
 	int d;
+	int array[10];
 	// p = randomPrime();
 	// q = randomPrime();
 	// unsigned int exponentPrivate = randomPrime();
-	p = 31;
-	q = 23;
-	printf("%u\n", p);
-	printf("%u\n", q);
+	p = genRandPrime();
+	q = genRandPrime();
+	printf("\n\nI am the CLIENT\n");
+	printf("my p: %u (randomly generated)\n", p);
+	printf("my q: %u (randomly generated)\n", q);
 	unsigned int exponentPrivate = 11;
 
 	e = basicallyRSA(p, q);
 	d = DRSA(p, q, e);
 	n = PrimeN(p, q);
 
-	printf("%u\n", e);
-	printf("%u\n", d);
+	printf("\nmy e: %u\n", e);
+	printf("my d: %u\n", d);
 
 	int socket_desc;    // file descripter returned by socket command
 	int read_size;
 	struct sockaddr_in server;    // in arpa/inet.h
 	char  server_reply[100], client_message[100];   // will need to be bigger
+	char encrypted_message[100];
 	
 	//Create socket
 	socket_desc = socket(AF_INET , SOCK_STREAM , 0);
@@ -86,62 +115,68 @@ int main(int argc , char *argv[])
 
 	unsigned int base = receive_unsigned_int(socket_desc);
 	unsigned int modulus = receive_unsigned_int(socket_desc);
-	unsigned int bobPublic = receive_unsigned_int(socket_desc);
-	unsigned int bobE = receive_unsigned_int(socket_desc);
-	unsigned int bobN = receive_unsigned_int(socket_desc);
+	unsigned int serverPublicKey = receive_unsigned_int(socket_desc);
+	unsigned int serverE = receive_unsigned_int(socket_desc);
+	unsigned int serverN = receive_unsigned_int(socket_desc);
+
 	unsigned int publicKey1 = FME(base, exponentPrivate, modulus);
 	unsigned int publicKey = FME(publicKey1, d, n); 
+
 	send_unsigned_int(socket_desc, publicKey);
 	send_unsigned_int(socket_desc, e);
 	send_unsigned_int(socket_desc, n);
 
-	printf("%u\n", e);
-	printf("%u\n", n);
-	printf("%u\n", publicKey);
-	printf("%u\n", bobE);
-	printf("%u\n", bobN);
-	printf("%u\n", bobPublic);
+	printf("\nBase: %u (received from server)\n", base);
+	printf("Modulus: %u (received from server)\n", modulus);
+	//printf("Server's E %u\n", serverE);
+	//printf("Server's N %u\n", serverN);
+	printf("\nMy RSA Public Key: %u\n", publicKey);
+	printf("My D-H Public Key: %u\n", publicKey1);
+	printf("Server's RSA Public Key: %u\n", serverPublicKey);
+	
+	unsigned int authentication = FME(serverPublicKey, serverE, serverN);
 
-	unsigned int authentication = FME(bobPublic, bobE, bobN);
-
-	printf("\n");
-
-	printf("%u\n", publicKey1);
-	printf("%u\n", authentication);
+	//printf("auth: %u\n", authentication);
 
 	unsigned int sharedKey = FME(authentication, exponentPrivate, modulus);
-	printf("%u\n", sharedKey);
+	printf("\nShared D-H Key: %u\n", sharedKey);
+
+	intToBinaryArray(sharedKey, array);
+	copyerArray(array);
+	keys();
 
 	//Get data from keyboard and send  to server
 	printf("What do you want to send to the server. (b for bye)\n");
 	while(strncmp(client_message,"b",1))      // quit on "b" for "bye"
 	{
 		memset(client_message,'\0',100);
+		memset(encrypted_message,'\0',100);
 
 		fgets(client_message, sizeof(client_message), stdin);
 		
 		// Remove the newline character at the end (if present)
 		client_message[strcspn(client_message, "\n")] = '\0';
+
+		printf("\nPre-Encypted Message: %s", client_message);
 		
-		// Iterate through each character and convert to uppercase
 		for(int i = 0; i < strlen(client_message); i++) {
-			client_message[i] = keysDecrypt(client_message[i], sharedKey);
+			encrypted_message[i] = encryptPixels(client_message[i]);
 		}
 
-		if( send(socket_desc , &client_message, strlen(client_message) , 0) < 0)
+		if( send(socket_desc , &encrypted_message, strlen(encrypted_message) , 0) < 0)
 		{
 			printf("Send failed");
 			return 1;
 		}
 
-		printf("\nSending Message: %.*s\n", (int) strlen(client_message),client_message);
+		printf("\nSending Encrypted Message: %.*s\n", (int) strlen(encrypted_message),encrypted_message);
 	
 		//Receive a reply from the server
 		if( (read_size = recv(socket_desc, server_reply , 100 , 0)) < 0)
 		{
 			printf("recv failed");
 		}
-		printf("Server  Replies: %.*s\n\n", read_size,server_reply);
+		printf("Servers Decrypted Message Replies: %.*s\n\n", read_size,server_reply);
 	}
 
 	
