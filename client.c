@@ -45,9 +45,11 @@ int main(int argc , char *argv[])
 	// p = randomPrime();
 	// q = randomPrime();
 	// unsigned int exponentPrivate = randomPrime();
-	p = 23;
-	q = 29;
-	unsigned int exponentPrivate = 71;
+	p = 31;
+	q = 23;
+	printf("%u\n", p);
+	printf("%u\n", q);
+	unsigned int exponentPrivate = 11;
 
 	e = basicallyRSA(p, q);
 	d = DRSA(p, q, e);

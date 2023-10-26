@@ -30,22 +30,19 @@ unsigned int generate_random_prime()
     unsigned int candidate;
     do
     {
-        candidate = rand() % (1000000 - 1) + 2; // Generate a random number between 2 and UINT_MAX
+        candidate = rand() % (1000 - 1) + 2; // Generate a random number between 2 and UINT_MAX
     } while (!is_prime(candidate));
     return candidate;
 }
 
 unsigned int randomPrime()
 {
-    srand(time(NULL));
+    srand(clock());
 
     unsigned int random_prime = generate_random_prime();
 
     return random_prime;
 }
-
-#include <stdio.h>
-#include <stdbool.h>
 
 unsigned int mod_pow(unsigned int base, unsigned int exponent, unsigned int modulus) {
     unsigned int result = 1;

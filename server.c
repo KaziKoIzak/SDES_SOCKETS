@@ -47,11 +47,13 @@ int main(int argc , char *argv[])
 	// unsigned int modulus = randomPrime();
 	// unsigned int base = primitiveRoot(modulus);
 	// unsigned int exponentPrivate = randomPrime();
-	p = 31;
-	q = 37;
-	unsigned int modulus = 97;
+	p = 17;
+	q = 11;
+	printf("%u\n", p);
+	printf("%u\n", q);
+	unsigned int modulus = 257;
 	unsigned int base = 3;
-	unsigned int exponentPrivate = 101;
+	unsigned int exponentPrivate = 7;
 
 	e = basicallyRSA(p, q);
 	d = DRSA(p, q, e);
@@ -123,12 +125,12 @@ int main(int argc , char *argv[])
 	printf("%u\n", publicKey);
 
 	unsigned int Authentication = FME(AlicePublic, AlicE, AliceN);
-	unsigned int checker = FME(publicKey, e, n);
+	unsigned int Check = FME(publicKey, e, n);
 
 	printf("\n");
 
 	printf("%u\n", Authentication);
-	printf("%u\n", checker);
+	printf("%u\n", Check);
 
 	unsigned int sharedKey = FME(Authentication, exponentPrivate, modulus);
 
