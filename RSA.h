@@ -5,7 +5,6 @@
 
 unsigned int basicallyRSA(unsigned int p, unsigned int q)
 {
-    unsigned int n = p * q;
     unsigned int totient_n = (p - 1) * (q - 1);
 
     unsigned int e = find_smallest_relative_prime(totient_n);
@@ -15,7 +14,6 @@ unsigned int basicallyRSA(unsigned int p, unsigned int q)
 
 int DRSA(unsigned int p, unsigned int q, unsigned int e)
 {
-    unsigned int n = p * q;
     unsigned int totient_n = (p - 1) * (q - 1);
 
     int d = modInverse(e, totient_n);

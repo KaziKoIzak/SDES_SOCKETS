@@ -46,42 +46,22 @@ uint32_t receive_unsigned_int(int sockfd) {
     return ntohl(received_num);
 }
 
-#include <time.h>
-
-unsigned int genRandPrime() {
-    // Array of 50 prime numbers
-    unsigned int primes[50] = {2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71,
-                      73, 79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 
-					  157, 163,167 ,173 ,179 ,181 ,191 ,193 ,197 ,199 ,211 ,223 ,227 ,229};
-
-    // Seed the random number generator with the current time
-    srand(clock());
-
-    // Generate a random index between 0 and 49
-    int random_index = rand() % 50;
-
-    return primes[random_index];
-}
-
 
 int main(int argc , char *argv[])
 {
 	unsigned int e, p, q, n;
 	int d;
 	int array[10];
-	// p = randomPrime();
-	// q = randomPrime();
-	// unsigned int exponentPrivate = randomPrime();
-	p = genRandPrime();
-	q = genRandPrime();
-	printf("\n\nI am the CLIENT\n");
+	p = randomPrime();
+	q = randomPrime();
+	unsigned int exponentPrivate = randomPrime();
+	printf("I am the CLIENT\n");
 	printf("my p: %u (randomly generated)\n", p);
 	printf("my q: %u (randomly generated)", q);
-	unsigned int exponentPrivate = genRandPrime();
 
 	e = basicallyRSA(p, q);
 	d = DRSA(p, q, e);
-	n = PrimeN(p, q);
+	n = p * q;
 
 	printf("\nmy e: %u\n", e);
 	printf("my d: %u\n", d);

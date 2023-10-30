@@ -30,7 +30,7 @@ unsigned int generate_random_prime()
     unsigned int candidate;
     do
     {
-        candidate = rand() % (1000 - 1) + 2; // Generate a random number between 2 and UINT_MAX
+        candidate = rand() % (300 - 1) + 2; // Generate a random number between 2 and UINT_MAX
     } while (!is_prime(candidate));
     return candidate;
 }
