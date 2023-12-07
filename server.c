@@ -60,7 +60,7 @@ int main(int argc , char *argv[])
 	unsigned int base = 3;
 	unsigned int exponentPrivate = randomPrime();
 	printf("my modulus: %u (randomly generated)\n", modulus);
-	printf("my base: %u (randomly generated)", base);
+	printf("my base: %u", base);
 	e = basicallyRSA(p, q);
 	d = DRSA(p, q, e);
 	n = p * q;
